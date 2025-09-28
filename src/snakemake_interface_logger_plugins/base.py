@@ -3,7 +3,7 @@ __copyright__ = "Copyright 2024, Cade Mirchandani, Johannes Köster"
 __email__ = "johannes.koester@uni-due.de"
 __license__ = "MIT"
 
-from typing import Optional
+from typing import Optional, Generic, TypeVar
 from snakemake_interface_logger_plugins.settings import (
     LogHandlerSettingsBase,
     OutputSettingsLoggerInterface,
@@ -12,11 +12,18 @@ from abc import ABC, abstractmethod
 from logging import Handler, LogRecord
 
 
-class LogHandlerBase(ABC, Handler):
+SettingsT = TypeVar("SettingsT", bound=LogHandlerSettingsBase)
+
+
+class LogHandlerBase(Generic[SettingsT], ABC, Handler):
+
+    common_settings: OutputSettingsLoggerInterface
+    settings: Optional[SettingsT]
+
     def __init__(
         self,
         common_settings: OutputSettingsLoggerInterface,
-        settings: Optional[LogHandlerSettingsBase],
+        settings: Optional[SettingsT],
     ) -> None:
         Handler.__init__(self)
         self.common_settings = common_settings

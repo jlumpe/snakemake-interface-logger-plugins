@@ -29,6 +29,10 @@ class LoggerPluginRegistry(PluginRegistryBase):
     def module_prefix(self) -> str:
         return common.logger_plugin_module_prefix
 
+    @property
+    def entry_point(self) -> str:
+        return common.logger_plugin_entry_point
+
     def load_plugin(self, name: str, module: types.ModuleType) -> Plugin:
         """Load a plugin by name."""
 

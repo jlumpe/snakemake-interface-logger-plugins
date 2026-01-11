@@ -14,7 +14,7 @@ from snakemake_interface_common.plugin_registry.plugin import PluginBase
 
 
 @dataclass
-class Plugin(PluginBase):
+class Plugin(PluginBase[LogHandlerSettingsBase]):
     log_handler: object
     _logger_settings_cls: Optional[Type[LogHandlerSettingsBase]]
     _name: str

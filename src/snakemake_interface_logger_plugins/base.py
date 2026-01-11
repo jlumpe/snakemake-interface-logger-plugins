@@ -12,27 +12,27 @@ from abc import ABC, abstractmethod
 from logging import Handler, LogRecord
 
 
-class LogHandlerBase(ABC, Handler):
+class PluginBase(ABC):
+
     def __init__(
         self,
         common_settings: OutputSettingsLoggerInterface,
         settings: Optional[LogHandlerSettingsBase],
     ) -> None:
-        Handler.__init__(self)
         self.common_settings = common_settings
         self.settings = settings
+
         self.__post_init__()
-        if self.writes_to_stream and self.writes_to_file:
+
+        if self.writes_to_stream and self.baseFilename is not None:
             raise ValueError("A handler cannot write to both stream and file")
 
     def __post_init__(self) -> None:
         pass
 
     @abstractmethod
-    def emit(self, record: LogRecord) -> None:
-        """Actually log the given record.
-
-        This is called after the record has passed the handler's installed filter.
+    def get_handler(self) -> Handler:
+        """
         """
 
     @property
@@ -43,29 +43,53 @@ class LogHandlerBase(ABC, Handler):
         """
 
     @property
-    @abstractmethod
+    def baseFilename(self) -> Optional[str]:
+        """
+        Path to the file this plugin writes to, if any.
+        """
+        return None
+
+    @property
     def writes_to_file(self) -> bool:
         """
-        Whether this plugin writes to a file
+        Whether this plugin writes to a file.
         """
+        return self.baseFilename is not None
 
     @property
     @abstractmethod
     def has_filter(self) -> bool:
         """
-        Whether this plugin attaches its own filter
+        Whether this plugin attaches its own filter (or shouldn't use the default one).
         """
 
     @property
     @abstractmethod
     def has_formatter(self) -> bool:
         """
-        Whether this plugin attaches its own formatter
+        Whether this plugin attaches its own formatter.
         """
 
-    @property
     @abstractmethod
     def needs_rulegraph(self) -> bool:
         """
         Whether this plugin requires the DAG rulegraph.
+        """
+        return False
+
+
+class LogHandlerBase(PluginBase, Handler):
+
+    def __init__(self, *args, **kwargs):
+        Handler.__init__(self)
+        PluginBase.__init__(self, *args, **kwargs)
+
+    def get_handler(self):
+        return self
+
+    @abstractmethod
+    def emit(self, record: LogRecord) -> None:
+        """Actually log the given record.
+
+        This is called after the record has passed the handler's installed filter.
         """
